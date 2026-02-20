@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
             deleteRecord(cfPtr);
             break;
         // display if user does not select valid choice
+        
         default:
             puts("Incorrect choice");
             break;
@@ -199,6 +200,33 @@ void newRecord(FILE *fPtr)
         fwrite(&client, sizeof(struct clientData), 1, fPtr);
     } // end else
 } // end function newRecord
+void withdrawAmount(FILE *fPtr)
+{
+    unsigned int acc;
+    double amt;
+    struct clientData c={0,"","",0};
+
+    printf("Account no: ");
+    scanf("%u",&acc);
+
+    fseek(fPtr,(acc-1)*sizeof(c),SEEK_SET);
+    fread(&c,sizeof(c),1,fPtr);
+
+    if(c.acctNum==0){ printf("No account\n"); return; }
+
+    printf("Balance: %.2f\nAmount: ",c.balance);
+    scanf("%lf",&amt);
+
+    if(amt<=0 || amt>c.balance)
+    { printf("Invalid / Insufficient balance\n"); return; }
+
+    c.balance -= amt;
+
+    fseek(fPtr,-sizeof(c),SEEK_CUR);
+    fwrite(&c,sizeof(c),1,fPtr);
+
+    printf("Withdrawn. Balance: %.2f\n",c.balance);
+}
 
 // enable user to input menu choice
 unsigned int enterChoice(void)
@@ -210,9 +238,11 @@ unsigned int enterChoice(void)
                  "    \"accounts.txt\" for printing\n"
                  "2 - update an account\n"
                  "3 - add a new account\n"
-                 "4 - delete an account\n"
-                 "5 - end program\n? ");
+                 "4 - withdrawn\n"
+                 "5 - delete an account\n"
+                 "6 - end program\n? ");
 
     scanf("%u", &menuChoice); // receive choice from user
     return menuChoice;
 } // end function enterChoice
+
